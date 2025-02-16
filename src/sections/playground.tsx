@@ -5,6 +5,7 @@ import PlayerProfile from "../components/player-profile";
 import { motion, AnimatePresence } from "framer-motion";
 import usePoints from "../hooks/usePoints";
 import toast from "react-hot-toast";
+import { getCookie, setCookie } from "../utils/cookie-helper";
 
 export type PlayerType = "X" | "O";
 
@@ -12,8 +13,12 @@ function Playground() {
   const [board, setBoard] = useState<(PlayerType | null)[]>(
     Array(9).fill(null),
   );
-  const [xPlayerName, setXPlayerName] = useState<string>("Player X");
-  const [oPlayerName, setOPlayerName] = useState<string>("Player O");
+  const [xPlayerName, setXPlayerName] = useState<string>(() => {
+    return getCookie("xPlayerName") || "Player X";
+  });
+  const [oPlayerName, setOPlayerName] = useState<string>(() => {
+    return getCookie("oPlayerName") || "Player O";
+  });
   const { xPoint, yPoint, handleUpdateScore, handleResetScore } = usePoints();
   const [xIsNext, setXIsNext] = useState<boolean>(true);
 
@@ -49,6 +54,16 @@ function Playground() {
     newBoard[index] = xIsNext ? "X" : "O";
     setBoard(newBoard);
     setXIsNext(!xIsNext);
+  };
+
+  const handleSetXPlayerName = (name: string) => {
+    setXPlayerName(name);
+    setCookie("xPlayerName", name, { path: "/" });
+  };
+
+  const handleSetOPlayerName = (name: string) => {
+    setOPlayerName(name);
+    setCookie("oPlayerName", name, { path: "/" });
   };
 
   useEffect(() => {
@@ -136,7 +151,7 @@ function Playground() {
           score={xPoint}
           isDisabled={!isGameFinished}
           name={xPlayerName}
-          setName={setXPlayerName}
+          setName={handleSetXPlayerName}
         />
         <PlayerProfile
           name={oPlayerName}
@@ -144,7 +159,7 @@ function Playground() {
           role="O"
           score={yPoint}
           isDisabled={!isGameFinished}
-          setName={setOPlayerName}
+          setName={handleSetOPlayerName}
         />
       </div>
       <div className="flex flex-row justify-center">

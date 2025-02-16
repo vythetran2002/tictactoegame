@@ -4,6 +4,7 @@ import { Pencil } from "lucide-react";
 import toast from "react-hot-toast";
 import { PlayerType } from "../sections/playground";
 import { UploadImageToCloudinary } from "../services/cloudinary";
+import { setCookie, getCookie } from "../utils/cookie-helper";
 
 interface PlayerProfileProps {
   isReversed?: boolean;
@@ -24,7 +25,9 @@ function PlayerProfile({
 }: PlayerProfileProps) {
   const [isEditMode, setIsEditMode] = useState(false);
   const inputFileRef = useRef<HTMLInputElement>(null);
-  const [avatarSrc, setAvatarSrc] = useState<string | null>(null);
+  const [avatarSrc, setAvatarSrc] = useState<string | null>(() => {
+    return getCookie(`player${role}Avatar`) || null;
+  });
 
   const handleSubmitForm = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -58,22 +61,21 @@ function PlayerProfile({
       formData.append("file", file);
       formData.append("upload_preset", "tick-tac-toe");
 
-      try {
-        const result = await UploadImageToCloudinary(formData);
-        toast.promise(Promise.resolve(result), {
-          loading: "loading...",
-          success: () => {
-            if (result) {
-              setAvatarSrc(result);
-              return "Upload image successfully";
-            }
-            return "Upload failed";
-          },
-          error: () => <b>Something went wrong</b>,
-        });
-      } catch (error) {
-        console.error("Upload error:", error);
-      }
+      toast.promise(
+        UploadImageToCloudinary(formData).then((result) => {
+          if (result) {
+            setAvatarSrc(result);
+            setCookie(`player${role}Avatar`, result, { path: "/" });
+            return result;
+          }
+          throw new Error("Upload failed");
+        }),
+        {
+          loading: "Updating avatar",
+          success: () => "Upload image successfully",
+          error: (err) => err.message || "Something went wrong",
+        },
+      );
     }
   };
 
@@ -93,21 +95,20 @@ function PlayerProfile({
         !isReversed ? "flex-row" : "flex-row-reverse"
       } rounded-md shadow-2xl bg-white gap-1`}
     >
-      <div className="relative group">
+      <div
+        className="relative group h-[fit-content] "
+        onClick={() => inputFileRef.current?.click()}
+      >
         <Avatar.Root className="w-12 h-12 flex justify-center items-center rounded-full border-2 cursor-pointer duration-150 group-hover:opacity-20 group-hover:brightness-10">
           <Avatar.Image
-            className="rounded-full"
-            src={
-              avatarSrc ||
-              "https://upload.wikimedia.org/wikipedia/commons/b/b2/Hausziege_04.jpg"
-            }
+            className="rounded-full w-12 h-12 object-cover"
+            src={avatarSrc || ""}
             alt={name}
           />
           <Avatar.Fallback>{name.slice(0, 2)}</Avatar.Fallback>
         </Avatar.Root>
 
         <Pencil
-          onClick={() => inputFileRef.current?.click()}
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 cursor-pointer opacity-0 duration-150 group-hover:opacity-100"
           size={17}
         />
