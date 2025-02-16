@@ -15,34 +15,38 @@ function Playground() {
   const { xPoint, yPoint, handleUpdateScore, handleResetScore } = usePoints();
   const [xIsNext, setXIsNext] = useState<boolean>(true);
 
-  const winner = useMemo(() => {
+  const winner: PlayerType | null = useMemo(() => {
     return calculateWinner(board);
   }, [board]);
 
-  const handleClick = (index: number) => {
-    if (winner) {
-      return;
-    }
-    if (board[index]) {
-      return;
-    }
-    const newBoard = board.slice();
-    newBoard[index] = xIsNext ? "X" : "O";
-    setBoard(newBoard);
-    setXIsNext(!xIsNext);
-  };
-
-  const isGameFinished = winner || board.every(Boolean);
+  const isGameFinished: Boolean = useMemo(() => {
+    const isBoardEmpty = board.every((cell) => cell === null);
+    const isGameOver = winner || board.every(Boolean);
+    return Boolean(isBoardEmpty || isGameOver);
+  }, [board, winner]);
 
   const resetGame = () => {
     setBoard(Array(9).fill(null));
-    setXIsNext(true);
+    if (winner) {
+      setXIsNext(winner === "O");
+    }
   };
 
   const resetScore = () => {
     setBoard(Array(9).fill(null));
     setXIsNext(true);
     handleResetScore();
+  };
+
+  const handleClick = (index: number) => {
+    if (winner || board[index]) {
+      return;
+    }
+
+    const newBoard = board.slice();
+    newBoard[index] = xIsNext ? "X" : "O";
+    setBoard(newBoard);
+    setXIsNext(!xIsNext);
   };
 
   useEffect(() => {
@@ -125,8 +129,13 @@ function Playground() {
       </div>
 
       <div className="flex flex-row justify-between gap-2">
-        <PlayerProfile role="X" score={xPoint} />
-        <PlayerProfile isReversed role="O" score={yPoint} />
+        <PlayerProfile role="X" score={xPoint} isDisabled={!isGameFinished} />
+        <PlayerProfile
+          isReversed
+          role="O"
+          score={yPoint}
+          isDisabled={!isGameFinished}
+        />
       </div>
       <div className="flex flex-row justify-center">
         <button

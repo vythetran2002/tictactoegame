@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Avatar, Form } from "radix-ui";
 import { Pencil } from "lucide-react";
 import toast from "react-hot-toast";
@@ -8,9 +8,15 @@ interface PlayerProfileProps {
   isReversed?: boolean;
   role: PlayerType;
   score: number;
+  isDisabled: boolean;
 }
 
-function PlayerProfile({ isReversed, role, score }: PlayerProfileProps) {
+function PlayerProfile({
+  isReversed,
+  role,
+  score,
+  isDisabled,
+}: PlayerProfileProps) {
   const [name, setName] = useState("Player " + role);
   const [isEditMode, setIsEditMode] = useState(false);
 
@@ -20,8 +26,13 @@ function PlayerProfile({ isReversed, role, score }: PlayerProfileProps) {
     const newName = formData.get("name") as string;
 
     if (newName) {
+      if (newName.length > 10) {
+        toast.error("Tên không được quá 10 ký tự!");
+        return;
+      }
       setName(newName);
       setIsEditMode(false);
+
       toast.success("Updated Player " + role + " name sucessfully", {
         style: {
           fontSize: "15px",
@@ -32,9 +43,19 @@ function PlayerProfile({ isReversed, role, score }: PlayerProfileProps) {
     }
   };
 
+  const handleStartEdit = () => {
+    setIsEditMode(true);
+  };
+
+  useEffect(() => {
+    if (isDisabled) {
+      setIsEditMode(false);
+    }
+  }, [isDisabled]);
+
   return (
     <div
-      className={`p-3 flex   ${
+      className={`p-3 flex ${
         !isReversed ? "flex-row" : "flex-row-reverse"
       } rounded-md shadow-2xl bg-white gap-1`}
     >
@@ -49,16 +70,20 @@ function PlayerProfile({ isReversed, role, score }: PlayerProfileProps) {
         </Avatar.Root>
 
         <Pencil
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 cursor-pointer opacity-0 duration-150 group-hover:opacity-100"
+          onClick={handleStartEdit}
+          className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 cursor-pointer opacity-0 duration-150 group-hover:opacity-100  "cursor-pointer"
+          `}
           size={17}
         />
       </div>
 
-      <div className="flex flex-col ">
+      <div className="flex flex-col max-w-20">
         {!isEditMode ? (
           <span
-            className="text-sm font-medium cursor-pointer"
-            onClick={() => setIsEditMode(true)}
+            className={`text-sm font-medium
+             cursor-pointer
+            `}
+            onClick={handleStartEdit}
           >
             {name}
           </span>
@@ -69,6 +94,7 @@ function PlayerProfile({ isReversed, role, score }: PlayerProfileProps) {
                 <input
                   type="text"
                   defaultValue={name}
+                  maxLength={10}
                   className="bg-gray-50 border max-w-20 border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block  px-2 py-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                   placeholder="Nhập tên người chơi"
                   required
@@ -78,8 +104,9 @@ function PlayerProfile({ isReversed, role, score }: PlayerProfileProps) {
                 match="valueMissing"
                 className="text-red-500 text-xs"
               >
-                Vui lòng nhập tên người chơi
+                Please input player's {role} name
               </Form.Message>
+              <span className="text-xs text-gray-500">10 characters </span>
             </Form.Field>
           </Form.Root>
         )}
