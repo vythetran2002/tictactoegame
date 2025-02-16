@@ -1,4 +1,4 @@
-# ScheduleMaster
+# TicTacToe Game
 
 This is a fun and engaging Tic Tac Toe game designed for entertainment, where two players can compete against each other. It provides a simple yet strategic gameplay experience, making it a great way to pass the time and challenge a friend."
 
