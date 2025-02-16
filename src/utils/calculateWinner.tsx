@@ -1,4 +1,8 @@
-export function calculateWinner(squares: (string | null)[]) {
+import { PlayerType } from "../sections/playground";
+
+export function calculateWinner(
+  squares: (PlayerType | null)[],
+): PlayerType | null {
   const lines = [
     [0, 1, 2],
     [3, 4, 5],
