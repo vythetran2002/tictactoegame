@@ -9,6 +9,8 @@ interface PlayerProfileProps {
   role: PlayerType;
   score: number;
   isDisabled: boolean;
+  name: string;
+  setName: (name: string) => void;
 }
 
 function PlayerProfile({
@@ -16,8 +18,9 @@ function PlayerProfile({
   role,
   score,
   isDisabled,
+  name,
+  setName,
 }: PlayerProfileProps) {
-  const [name, setName] = useState("Player " + role);
   const [isEditMode, setIsEditMode] = useState(false);
 
   const handleSubmitForm = (e: React.FormEvent<HTMLFormElement>) => {
@@ -70,7 +73,6 @@ function PlayerProfile({
         </Avatar.Root>
 
         <Pencil
-          onClick={handleStartEdit}
           className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 cursor-pointer opacity-0 duration-150 group-hover:opacity-100  "cursor-pointer"
           `}
           size={17}

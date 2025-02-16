@@ -12,6 +12,8 @@ function Playground() {
   const [board, setBoard] = useState<(PlayerType | null)[]>(
     Array(9).fill(null),
   );
+  const [xPlayerName, setXPlayerName] = useState<string>("Player X");
+  const [oPlayerName, setOPlayerName] = useState<string>("Player O");
   const { xPoint, yPoint, handleUpdateScore, handleResetScore } = usePoints();
   const [xIsNext, setXIsNext] = useState<boolean>(true);
 
@@ -59,7 +61,7 @@ function Playground() {
             <span
               className={`${winner === "O" ? "text-red-500" : "text-blue-500"}`}
             >
-              {winner}
+              {winner === "O" ? oPlayerName : xPlayerName}
             </span>{" "}
             has won
           </span>
@@ -129,12 +131,20 @@ function Playground() {
       </div>
 
       <div className="flex flex-row justify-between gap-2">
-        <PlayerProfile role="X" score={xPoint} isDisabled={!isGameFinished} />
         <PlayerProfile
+          role="X"
+          score={xPoint}
+          isDisabled={!isGameFinished}
+          name={xPlayerName}
+          setName={setXPlayerName}
+        />
+        <PlayerProfile
+          name={oPlayerName}
           isReversed
           role="O"
           score={yPoint}
           isDisabled={!isGameFinished}
+          setName={setOPlayerName}
         />
       </div>
       <div className="flex flex-row justify-center">
